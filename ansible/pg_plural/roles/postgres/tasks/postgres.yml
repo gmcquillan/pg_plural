@@ -1,0 +1,6 @@
+---
+# Postgres Tasks 
+
+# Setup PG apt-source repository for newer versions of PG.
+- name: install postgres
+  shell: apt-get install -q -y postgresql-9.4

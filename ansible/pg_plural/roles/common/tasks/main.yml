@@ -1,0 +1,17 @@
+
+---
+# Common tasks
+
+# Setup PG apt-source repository for newer versions of PG.
+- name: get postgres gpg keys
+  shell: apt-get install wget ca-certificates && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+  become: yes
+  become_method: sudo
+
+- name: setup pg apt repo
+  template: src=pg_sources.lst.j2 dest=/etc/apt/sources.list.d/pg.list
+  become: yes
+  become_method: sudo
+  notify: update apt
+
+- meta: flush_handlers
