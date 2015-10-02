@@ -6,7 +6,8 @@
   remote_user: vagrant
 
   roles:
-    - common
+    #- common
+    - postgres
 
 #- name: deploy MySQL and configure the databases
 #  hosts: dbservers

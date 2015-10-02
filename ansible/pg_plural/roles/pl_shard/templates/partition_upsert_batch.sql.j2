@@ -1,0 +1,16 @@
+CREATE OR REPLACE FUNCTION upsert_{{ table_name }}(
+	{% for row in rows %}
+	in_{{ row['column_name'] }} {{ row['column_type'] }}[]{% if not loop.last %},{% endif %}
+	{% endfor %}
+    ) RETURNS TABLE (update int)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+
+RETURN QUERY 
+	SELECT upsert_{{ table_name }}({% for row in rows %}counts.in_{{ row['column_name'] }}{% if not loop.last %},{% endif %}{% endfor %}) 
+	FROM unnest({% for row in rows %}in_{{ row['column_name'] }}{% if not loop.last %},{% endif %}{% endfor %}) 
+	AS counts ({% for row in rows %}in_{{ row['column_name'] }}{% if not loop.last %},{% endif %}{% endfor %});
+
+END;
+$$;

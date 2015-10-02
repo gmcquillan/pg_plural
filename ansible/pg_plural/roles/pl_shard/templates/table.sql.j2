@@ -1,0 +1,7 @@
+-- This table can easily be modified to suit most any use-cases.
+CREATE TABLE {{ table_name }}
+(
+	{% for row in rows %}
+	{{ column_name }} {{ column_type }}, 
+    {% endfor %}
+);

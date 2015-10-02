@@ -1,0 +1,54 @@
+-- Run this on part01 and part02 only
+
+CREATE OR REPLACE FUNCTION upsert_{{ table_name }}(
+    {% for row in rows %}
+		in_{{ row['column_name'] }} {{ row['column_type'] }}{% if not loop.last %},{% endif %}
+    ) RETURNS int
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    UPDATE {{ table_name }} SET {{ partition_column }}=hll_add({{ partition_column }}, hll_hash_text(in_{{ partition_column }}))
+		{% for row in rows %}
+		{% if row['column_name'] == partition_name %}{% continue %}{% endif %}
+		{% if loop.first %}
+        WHERE {{ row['column_name'] }}=in_{{ row['column_name'] }}
+		{% elif loop.last %}
+        AND {{ row['column_name'] }}=in_{{ row['column_name'] }};
+		{% else %}
+        AND {{ row['column_name'] }}=in_{{ row['column_name'] }}
+		{% endif %}
+		{% endfor %}
+    IF FOUND THEN
+        RETURN 0;
+    END IF;
+    BEGIN
+        INSERT INTO {{ table_name }} ({% for row in rows %} row['column_name']{% if not loop.last %},{% endif %})
+          VALUES ({% for row in rows %}{% if row['column_name'] != partition_column %}in_{{ row['column_name'] }}{% else %} hll_empty() {% endif %}{% if not loop.last %},{% endif %}{% endfor %}
+        UPDATE {{ table_name }} SET {{ partition_column }}=hll_add({{ partition_column }}, hll_hash_text(in_{{ partition_column }}))
+		{% for row in rows %}
+		{% if row['column_name'] == partition_name %}{% continue %}{% endif %}
+		{% if loop.first %}
+        WHERE {{ row['column_name'] }}=in_{{ row['column_name'] }}
+		{% elif loop.last %}
+        AND {{ row['column_name'] }}=in_{{ row['column_name'] }};
+		{% else %}
+        AND {{ row['column_name'] }}=in_{{ row['column_name'] }}
+		{% endif %}
+		{% endfor %}
+    EXCEPTION WHEN OTHERS THEN
+    	UPDATE {{ table_name }} SET {{ partition_column }}=hll_add({{ partition_column }}, hll_hash_text(in_{{ partition_column }}))
+		{% for row in rows %}
+		{% if row['column_name'] == partition_name %}{% continue %}{% endif %}
+		{% if loop.first %}
+        WHERE {{ row['column_name'] }}=in_{{ row['column_name'] }}
+		{% elif loop.last %}
+        AND {{ row['column_name'] }}=in_{{ row['column_name'] }};
+		{% else %}
+        AND {{ row['column_name'] }}=in_{{ row['column_name'] }}
+		{% endif %}
+		{% endfor %}
+ 
+    END;
+    RETURN 1;
+END;
+$$;
