@@ -1,3 +1,0 @@
-postgres_version: 9.4
-shard_user_name: vagrant
-shard_user_group: vagrant 

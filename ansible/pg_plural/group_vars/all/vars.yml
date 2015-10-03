@@ -1,0 +1,15 @@
+# Global configuraiton
+cluster_name: pl_plural
+tables:
+  - name: test_counts
+    partition_column: event_ids
+    num_partitions: 16
+    # These are <column_name>, <column_type>.
+    rows:
+      - [id, CHAR(22)]
+      - [date, DATE]
+      - [hour, SMALLINT]
+      - [event_ids,  hll]
+      - [category, TEXT]
+
+
