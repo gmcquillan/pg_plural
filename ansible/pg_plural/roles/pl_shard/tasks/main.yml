@@ -1,14 +1,27 @@
 ---
 # PL_Shard -- using PL Proxy to shard requests across databases.
 
-- name: create our test user
+# Preferred method would be to use the postgresql-user directive, but
+# it requires pip, which requires other things, just ignoring failures for now.
+- name: Create our test user
   shell: createuser -s {{ shard_user_name }}
+  become: yes
+  become_user: postgres
+  become_method: sudo
+  ignore_errors: yes
 
+- name: Create database(s)
+  shell: createdb -O "{{ shard_user_name }}" {{ item.database_name }}
+  with_items: "{{ pl_plural_databases }}"
+  ignore_errors: yes
 
-# 1. Create each database we know about on each host we know about.
+- name: Enable extension on each database
+  shell: psql -d {{ item.database_name }} -c "CREATE EXTENSION hll;"
+  with_items: "{{ pl_plural_databases }}"
 
-# 2. Create the plproxy schema on each database
+- name: PL_SHARD | Upload template file
+  template: src=table.sql.j2  dest=/tmp/table.sql
 
-# 3. Create the sharded table(s)
-
-# 4. Create shard/batch functions for each database.
+- name: PL_SHARD | Create table(s)
+  shell: psql -d {{ item.database_name }} -f /tmp/table.sql
+  with_items: "{{ pl_plural_databases }}"

@@ -1,0 +1,4 @@
+-- Only supports one machine for now.
+{% for partition in range(num_partitions) %}
+CREATE DATABASE part_{{ partition }};
+{% endfor %}

@@ -1,9 +1,25 @@
 # Global configuraiton
-cluster_name: pl_plural
-tables:
+pl_plural_cluster_name: pl_plural
+# Must be a power of 2.
+pl_plural_num_partitions: 8 # Unused.
+# Will have a padded, two digit number.
+pl_plural_database_name__prefix: part_
+# Will have an unpadded numer.
+partition_id_prefix: p
+# Manually mapping this out temporarily.
+pl_plural_databases:
+  - { database_name: part0, database_id: 0, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part1, database_id: 1, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part2, database_id: 2, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part3, database_id: 3, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part4, database_id: 4, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part5, database_id: 5, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part6, database_id: 6, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part7, database_id: 7, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+
+pl_plural_tables:
   - name: test_counts
     partition_column: event_ids
-    num_partitions: 16
     # These are <column_name>, <column_type>.
     rows:
       - [id, CHAR(22)]

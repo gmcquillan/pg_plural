@@ -8,4 +8,4 @@
   roles:
     - common
     - postgres
-    - pl_proxy
+    - pl_shard
