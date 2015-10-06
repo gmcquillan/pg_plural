@@ -2,10 +2,11 @@
 pl_plural_cluster_name: pl_plural
 # Must be a power of 2.
 pl_plural_num_partitions: 8 # Unused.
-# Will have a padded, two digit number.
 pl_plural_database_name__prefix: part_
-# Will have an unpadded numer.
+# Will have an unpadded number.
 partition_id_prefix: p
+# Our cluster's Postgres User.
+shard_user_name: vagrant
 # Manually mapping this out temporarily.
 pl_plural_databases:
   - { database_name: part0, database_id: 0, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }

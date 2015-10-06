@@ -18,10 +18,29 @@
 - name: Enable extension on each database
   shell: psql -d {{ item.database_name }} -c "CREATE EXTENSION hll;"
   with_items: "{{ pl_plural_databases }}"
+  ignore_errors: yes
 
-- name: PL_SHARD | Upload template file
+- name: Upload template file
   template: src=table.sql.j2  dest=/tmp/table.sql
+  ignore_errors: yes
 
-- name: PL_SHARD | Create table(s)
+- name: Create table(s)
   shell: psql -d {{ item.database_name }} -f /tmp/table.sql
   with_items: "{{ pl_plural_databases }}"
+  ignore_errors: yes
+
+- name: Upload upsert_single function(s)
+  template: src=partition_upsert_single.sql.j2 dest=/tmp/upsert_single_{{ item.name }}.sql
+  with_items: "{{ pl_plural_tables }}"
+
+- name: Create upsert Single function(s)
+  shell: psql -d {{ item.database_name }} -f /tmp/upsert_single_*
+  with_items: "{{ pl_plural_databases }}"
+
+#- name: Upload upsert_batch function(s)
+#  template: src=partition_batch_single.sql.j2 dest=/tmp/upsert_batch_{{ item }}.sql
+#  with_items: "{{ pl_plural_tables.name }}"
+
+#- name: Create upsert Single function(s)
+#  shell: psql -d {{ item.database_name }} -f /tmp/upsert_batch_*
+#  with_items: "{{ pl_plural_databases }}"

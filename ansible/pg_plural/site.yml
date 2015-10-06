@@ -6,6 +6,6 @@
   remote_user: vagrant
 
   roles:
-    - common
-    - postgres
+#    - common
+#    - postgres
     - pl_shard

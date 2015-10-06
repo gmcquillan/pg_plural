@@ -1,50 +1,52 @@
 -- Run this on part01 and part02 only
 
-CREATE OR REPLACE FUNCTION upsert_{{ table_name }}(
-    {% for row in rows %}
-		in_{{ row['column_name'] }} {{ row['column_type'] }}{% if not loop.last %},{% endif %}
+{% for table in pl_plural_tables %}
+CREATE OR REPLACE FUNCTION upsert_{{ table.name }}(
+    {% for column_name, column_type in table.rows %}
+		in_{{ column_name }} {{ column_type }}{% if not loop.last %},{% endif %}
+	{% endfor %}
     ) RETURNS int
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    UPDATE {{ table_name }} SET {{ partition_column }}=hll_add({{ partition_column }}, hll_hash_text(in_{{ partition_column }}))
-		{% for row in rows %}
-		{% if row['column_name'] == partition_name %}{% continue %}{% endif %}
+    UPDATE {{ table.name }} SET {{ table.partition_column }}=hll_add({{ table.partition_column }}, hll_hash_text(in_{{ table.partition_column }}))
+		{% for column_name, column_type in table.rows %}
+		{%- if column_name == table.partition_column %}{% continue %}{% endif %}
 		{% if loop.first %}
-        WHERE {{ row['column_name'] }}=in_{{ row['column_name'] }}
+        WHERE {{ column_name }}=in_{{ column_name }}
 		{% elif loop.last %}
-        AND {{ row['column_name'] }}=in_{{ row['column_name'] }};
+        AND {{ column_name }}=in_{{ column_name }};
 		{% else %}
-        AND {{ row['column_name'] }}=in_{{ row['column_name'] }}
+        AND {{ column_name }}=in_{{ column_name }}
 		{% endif %}
 		{% endfor %}
     IF FOUND THEN
         RETURN 0;
     END IF;
     BEGIN
-        INSERT INTO {{ table_name }} ({% for row in rows %} row['column_name']{% if not loop.last %},{% endif %})
-          VALUES ({% for row in rows %}{% if row['column_name'] != partition_column %}in_{{ row['column_name'] }}{% else %} hll_empty() {% endif %}{% if not loop.last %},{% endif %}{% endfor %}
-        UPDATE {{ table_name }} SET {{ partition_column }}=hll_add({{ partition_column }}, hll_hash_text(in_{{ partition_column }}))
-		{% for row in rows %}
-		{% if row['column_name'] == partition_name %}{% continue %}{% endif %}
+        INSERT INTO {{ table.name }} ({% for column_name, column_type in table.rows %}{{ column_name }}{% if not loop.last %},{% endif %}{% endfor %})
+          VALUES ({% for column_name, column_type in table.rows %}{% if column_name != table.partition_column %}in_{{ column_name }}{% else %} hll_empty() {% endif %}{% if not loop.last %},{% endif %}{% endfor %});
+        UPDATE {{ table.name }} SET {{ table.partition_column }}=hll_add({{ table.partition_column }}, hll_hash_text(in_{{ table.partition_column }}))
+		{% for column_name, column_type in table.rows %}
+		{% if column_name == table.partition_column %}{% continue %}{% endif %}
 		{% if loop.first %}
-        WHERE {{ row['column_name'] }}=in_{{ row['column_name'] }}
+        WHERE {{ column_name }}=in_{{ column_name }}
 		{% elif loop.last %}
-        AND {{ row['column_name'] }}=in_{{ row['column_name'] }};
+        AND {{ column_name }}=in_{{ column_name }};
 		{% else %}
-        AND {{ row['column_name'] }}=in_{{ row['column_name'] }}
+        AND {{ column_name }}=in_{{ column_name }}
 		{% endif %}
 		{% endfor %}
     EXCEPTION WHEN OTHERS THEN
-    	UPDATE {{ table_name }} SET {{ partition_column }}=hll_add({{ partition_column }}, hll_hash_text(in_{{ partition_column }}))
-		{% for row in rows %}
-		{% if row['column_name'] == partition_name %}{% continue %}{% endif %}
+    	UPDATE {{ table.name }} SET {{ table.partition_column }}=hll_add({{ table.partition_column }}, hll_hash_text(in_{{ table.partition_column }}))
+		{% for column_name, column_type in table.rows %}
+		{% if column_name == table.partition_column %}{% continue %}{% endif %}
 		{% if loop.first %}
-        WHERE {{ row['column_name'] }}=in_{{ row['column_name'] }}
+        WHERE {{ column_name }}=in_{{ column_name }}
 		{% elif loop.last %}
-        AND {{ row['column_name'] }}=in_{{ row['column_name'] }};
+        AND {{ column_name }}=in_{{ column_name }};
 		{% else %}
-        AND {{ row['column_name'] }}=in_{{ row['column_name'] }}
+        AND {{ column_name }}=in_{{ column_name }}
 		{% endif %}
 		{% endfor %}
  
@@ -52,3 +54,5 @@ BEGIN
     RETURN 1;
 END;
 $$;
+
+{% endfor %}
