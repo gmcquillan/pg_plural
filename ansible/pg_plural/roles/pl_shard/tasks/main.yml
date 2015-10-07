@@ -37,10 +37,10 @@
   shell: psql -d {{ item.database_name }} -f /tmp/upsert_single_*
   with_items: "{{ pl_plural_databases }}"
 
-#- name: Upload upsert_batch function(s)
-#  template: src=partition_batch_single.sql.j2 dest=/tmp/upsert_batch_{{ item }}.sql
-#  with_items: "{{ pl_plural_tables.name }}"
+- name: Upload upsert_batch function(s)
+  template: src=partition_upsert_batch.sql.j2 dest=/tmp/upsert_batch_{{ item }}.sql
+  with_items: "{{ pl_plural_tables }}"
 
-#- name: Create upsert Single function(s)
-#  shell: psql -d {{ item.database_name }} -f /tmp/upsert_batch_*
-#  with_items: "{{ pl_plural_databases }}"
+- name: Create upsert_batch function(s)
+  shell: psql -d {{ item.database_name }} -f /tmp/upsert_batch_*
+  with_items: "{{ pl_plural_databases }}"
