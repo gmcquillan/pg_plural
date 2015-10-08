@@ -1,0 +1,3 @@
+*.swp
+slides/reveal.js/css/reveal.min.css
+slides/reveal.js/js/reveal.min.js
