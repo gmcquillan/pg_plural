@@ -1,18 +1,18 @@
-{% for table in pl_plural_tables %}
+{% for table in pg_plural_tables %}
+
 CREATE OR REPLACE FUNCTION upsert_{{ table.name }}(
-    {% for column_name, column_type in table.rows %}
-    in_{{ column_name }} {{ column_type }}[]{% if not loop.last %},{% endif %}
-    {% endfor %}
-    ) RETURNS TABLE (update int)
+    {% for column_name, column_type in table.rows %}in_{{ column_name }} {{ column_type }}[]{% if not loop.last %},{% endif %}{% endfor %}
+) RETURNS TABLE (update int)
     LANGUAGE plpgsql
     AS $$
 BEGIN
 
 RETURN QUERY 
     SELECT upsert_{{ table.name }}({% for column_name, column_type in table.rows %}counts.in_{{ column_name }}{% if not loop.last %},{% endif %}{% endfor %}) 
-    FROM unnest({% for column_name, column_type in table.rows %}in_{{ column_name }}{% if not loop.last %},{% endif %}{% endfor %}) 
-    AS counts ({% for column_name, column_type in table.rows %}in_{{ column_name }}{% if not loop.last %},{% endif %}{% endfor %});
+	FROM unnest({% for column_name, column_type in table.rows %}in_{{ column_name }}{% if not loop.last %},{% else %}{% endif %}{% endfor %})
+    AS counts ({% for column_name, column_type in table.rows %}in_{{ column_name }}{% if not loop.last %},{% else %}{% endif %}{% endfor %});
 
 END;
 $$;
-{$ endfor %}
+
+{% endfor %}

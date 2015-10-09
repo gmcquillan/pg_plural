@@ -1,6 +1,6 @@
 -- Run this on part01 and part02 only
 
-{% for table in pl_plural_tables %}
+{% for table in pg_plural_tables %}
 CREATE OR REPLACE FUNCTION upsert_{{ table.name }}(
     {% for column_name, column_type in table.rows %}
       in_{{ column_name }} {{ column_type }}{% if not loop.last %},{% endif %}

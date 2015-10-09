@@ -12,12 +12,12 @@
 
 - name: Create database(s)
   shell: createdb -O "{{ shard_user_name }}" {{ item.database_name }}
-  with_items: "{{ pl_plural_databases }}"
+  with_items: "{{ pg_plural_databases }}"
   ignore_errors: yes
 
 - name: Enable extension on each database
   shell: psql -d {{ item.database_name }} -c "CREATE EXTENSION hll;"
-  with_items: "{{ pl_plural_databases }}"
+  with_items: "{{ pg_plural_databases }}"
   ignore_errors: yes
 
 - name: Upload template file
@@ -26,21 +26,21 @@
 
 - name: Create table(s)
   shell: psql -d {{ item.database_name }} -f /tmp/table.sql
-  with_items: "{{ pl_plural_databases }}"
+  with_items: "{{ pg_plural_databases }}"
   ignore_errors: yes
 
 - name: Upload upsert_single function(s)
   template: src=partition_upsert_single.sql.j2 dest=/tmp/upsert_single_{{ item.name }}.sql
-  with_items: "{{ pl_plural_tables }}"
+  with_items: "{{ pg_plural_tables }}"
 
 - name: Create upsert Single function(s)
   shell: psql -d {{ item.database_name }} -f /tmp/upsert_single_*
-  with_items: "{{ pl_plural_databases }}"
+  with_items: "{{ pg_plural_databases }}"
 
 - name: Upload upsert_batch function(s)
-  template: src=partition_upsert_batch.sql.j2 dest=/tmp/upsert_batch_{{ item }}.sql
-  with_items: "{{ pl_plural_tables }}"
+  template: src=partition_upsert_batch.sql.j2 dest=/tmp/upsert_batch_{{ item.name }}.sql
+  with_items: "{{ pg_plural_tables }}"
 
 - name: Create upsert_batch function(s)
   shell: psql -d {{ item.database_name }} -f /tmp/upsert_batch_*
-  with_items: "{{ pl_plural_databases }}"
+  with_items: "{{ pg_plural_databases }}"

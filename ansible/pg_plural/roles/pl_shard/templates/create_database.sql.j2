@@ -1,4 +1,4 @@
 -- Only supports one machine for now.
-{% for partition in range(num_partitions) %}
+{% for partition in range(pg_plural_num_partitions) %}
 CREATE DATABASE part_{{ partition }};
 {% endfor %}

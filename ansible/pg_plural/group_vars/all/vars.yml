@@ -1,14 +1,14 @@
 # Global configuraiton
-pl_plural_cluster_name: pl_plural
+pg_plural_cluster_name: pg_plural
 # Must be a power of 2.
-pl_plural_num_partitions: 8 # Unused.
-pl_plural_database_name__prefix: part_
+pg_plural_num_partitions: 8 # Unused.
+pg_plural_database_name__prefix: part_
 # Will have an unpadded number.
 partition_id_prefix: p
 # Our cluster's Postgres User.
 shard_user_name: vagrant
 # Manually mapping this out temporarily.
-pl_plural_databases:
+pg_plural_databases:
   - { database_name: part0, database_id: 0, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
   - { database_name: part1, database_id: 1, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
   - { database_name: part2, database_id: 2, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
@@ -18,7 +18,7 @@ pl_plural_databases:
   - { database_name: part6, database_id: 6, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
   - { database_name: part7, database_id: 7, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
 
-pl_plural_tables:
+pg_plural_tables:
   - name: test_counts
     partition_column: event_ids
     # These are <column_name>, <column_type>.

@@ -41,19 +41,147 @@
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 				<section>
-					<h1>Reveal.js</h1>
-					<h3>The HTML Presentation Framework</h3>
+					<h1>Data of Future Past</h1>
+					<h3>Postgres as Distributed Online Processing Analytics Engine</h3>
 					<p>
-						<small>Created by <a href="http://hakim.se">Hakim El Hattab</a> / <a href="http://twitter.com/hakimel">@hakimel</a></small>
+						<small>by <a href="http://github.com/gmcquillan">Gavin McQuillan</a> / <a href="http://twitter.com/gmcquillan">@gmcquillan</a></small>
 					</p>
 				</section>
 
 				<section>
-					<h2>Hello There</h2>
-					<p>
-						reveal.js enables you to create beautiful interactive slide decks using HTML. This presentation will show you examples of what it can do.
-					</p>
+					<h2>Setting</h2>
+					<p>Data Engineering at Urbanairship, a mobile messaging company:</p>
+					<ul>
+						<li>Counting lots of things as fast as possible</li>
+						<li>HBase to the rescue</li>
+						<li>Home grown dimensional storage called datacube</li>
+					</ul>
 				</section>
+
+				<section>
+					<h2>The Problem</h2>
+					<ul>
+						<li>data consistency</li>
+						<li>new dimensions multiply writes</li>
+						<li>double counting</li>
+						<li>changing schema is hard</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Exploring Solutions</h2>
+					<p>Postgres is pretty nice to work with.</p>
+					<p>Makes adhoc analytics simple.</p>
+				</section>
+ 
+				<section>
+					<h2>Problems with Postgres</h2>
+					<p>Not particularly good at scaling writes</p>
+					<p>Operationally complex</p>
+				</section>
+
+				<!-- relevance? -->
+				<section>
+					<h2>Projects to help</h2>
+					<ul>
+						<li>Postgres-xc</li>
+						<li>Bucardo</li>
+						<li>Pg-shard</li>
+						<li>PLProxy &amp; Skytools</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Problems with Postgres</h2>
+					<p>Not particularly good at scaling writes</p>
+					<p>Operationally complex</p>
+				</section>
+
+				<section>
+					<h2>I chose PLProxy</h2>
+					<ul>
+						<li>Simple API</li>
+						<li>Battle tested</li>
+						<li>Flexible</li>
+					</ul>
+
+					<p>Maybe better options exist?</p>
+				</section>
+
+
+				<section>
+					<h2>Approach</h2>
+					<p>Two phase commit</p>
+					<p>Communitive, Idempotent data</p>
+				</section>
+
+				<section>
+					<h2>HyperLogLog</h2>
+					<p>postgres-hll extension</p>
+					<p>Communitive, idempotent</p>
+					<p>Fast, approximate, cardinality</p>
+				</section>
+
+				<section>
+					<h2>Example table</h2>
+					<pre><code data-trim contenteditable>
+CREATE TABLE test_counts
+(
+	id CHAR(22),
+	date DATE,
+	hour SMALLINT,
+	event_ids hll,
+	category TEXT
+);
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Single Insert/Update</h2>
+					<pre><code data-trim contenteditable>
+CREATE OR REPLACE FUNCTION upsert_test_count(...) RETURNS int
+BEGIN
+    UPDATE test_counts set event_ids=hll_add(
+			event_ids, hll_hash_text(in_event_id))
+        WHERE ... 
+    IF FOUND THEN RETURN 0; END IF;
+    BEGIN
+        INSERT INTO test_counts(event_ids, ...)
+          VALUES (hll_empty(), ...);
+        Update test_counts SET event_ids=hll_add(
+			event_ids, hll_hash_text(in_event_id))
+        WHERE ...
+    END;
+    RETURN 1;
+END;
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Still too slow</h2>
+					<p>A transaction per tuple just won't work long-term</p>
+				</section>
+
+				<section>
+					<h2>Batching</h2>
+
+					<pre><code data-trim contenteditable>
+CREATE OR REPLACE FUNCTION upsert_test_count(
+    in_ids text[], in_dates date[], in_hours smallint[],
+	in_event_ids text[], in_cats text[]
+) RETURNS TABLE (update int)
+BEGIN
+
+RETURN QUERY SELECT upsert_push_hll(
+	c.in_ids, c.in_date, c.in_hour, c.in_event_id, c.in_cats
+) FROM unnest(
+	in_ids, in_dates, in_hours, in_event_ids, in_cats
+) as c (in_id, in_date, in_hour, in_event_id, in_cats);
+END;
+$$;
+					</code></pre>
+				</section>
+
 
 				<!-- Example of nested vertical slides -->
 				<section>

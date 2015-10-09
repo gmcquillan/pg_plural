@@ -1,5 +1,5 @@
 -- This table can easily be modified to suit most any use-cases.
-{% for table in pl_plural_tables %}
+{% for table in pg_plural_tables %}
 CREATE TABLE {{ table.name }}
 (
 	{% for column_name, column_type in table.rows %}
