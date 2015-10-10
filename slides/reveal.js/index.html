@@ -15,7 +15,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+		<link rel="stylesheet" href="css/theme/pg_plural.css" id="theme">
 
 		<!-- Code syntax highlighting -->
 		<link rel="stylesheet" href="lib/css/zenburn.css">
@@ -43,6 +43,7 @@
 				<section>
 					<h1>Data of Future Past</h1>
 					<h3>Postgres as Distributed Online Processing Analytics Engine</h3>
+					<img width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
 					<p>
 						<small>by <a href="http://github.com/gmcquillan">Gavin McQuillan</a> / <a href="http://twitter.com/gmcquillan">@gmcquillan</a></small>
 					</p>
@@ -50,7 +51,7 @@
 
 				<section>
 					<h2>Setting</h2>
-					<p>Data Engineering at Urbanairship, a mobile messaging company:</p>
+					<p>Data Engineering at Urban Airship, a mobile messaging company:</p>
 					<ul>
 						<li>Counting lots of things as fast as possible</li>
 						<li>HBase to the rescue</li>
@@ -89,12 +90,6 @@
 						<li>Pg-shard</li>
 						<li>PLProxy &amp; Skytools</li>
 					</ul>
-				</section>
-
-				<section>
-					<h2>Problems with Postgres</h2>
-					<p>Not particularly good at scaling writes</p>
-					<p>Operationally complex</p>
 				</section>
 
 				<section>
@@ -180,6 +175,10 @@ RETURN QUERY SELECT upsert_push_hll(
 END;
 $$;
 					</code></pre>
+				</section>
+
+				<section>
+					<h2>Experimental Design</h2>
 				</section>
 
 
