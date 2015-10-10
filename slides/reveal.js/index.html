@@ -107,14 +107,28 @@
 				<section>
 					<h2>Approach</h2>
 					<p>Two phase commit</p>
-					<p>Communitive, Idempotent data</p>
+					<p>Commutative, Idempotent data</p>
 				</section>
 
 				<section>
 					<h2>HyperLogLog</h2>
 					<p>postgres-hll extension</p>
-					<p>Communitive, idempotent</p>
+					<p>Commutative, idempotent</p>
 					<p>Fast, approximate, cardinality</p>
+				</section>
+
+				<section>
+					<h1>Experimental Design</h1>
+				</section>
+ 
+				<section>
+					<h2>Logical Layout</h2>
+					<p>{image of layout 1}</p>
+				</section>
+
+				<section>
+					<h2>Physical Layout</h2>
+					<p>{image of layout 1}</p>
 				</section>
 
 				<section>
@@ -158,6 +172,14 @@ END;
 				</section>
 
 				<section>
+					<h2>Indexes</h2>
+				</section>
+
+				<section>
+					<h2>Advanced Logical Layout</h2>
+				</section>
+
+				<section>
 					<h2>Batching</h2>
 
 					<pre><code data-trim contenteditable>
@@ -178,7 +200,22 @@ $$;
 				</section>
 
 				<section>
-					<h2>Experimental Design</h2>
+					<h2>Anatomy of a PLProxy Transaction</h2>
+					<p>{transaction diagram}</p>
+				</section>
+
+				<section>
+					<h2>Deadlock detected!</h2>
+					<p>{transaction diagram w/ deadlock explain}</p>
+				</section>
+
+
+				<section>
+					<h2>Deadlock Solutions</h2>
+					<ul>
+						<li>Sort tuples before submitting them</li>
+						<li>Single writer pattern</li>
+					</ul>
 				</section>
 
 
@@ -518,6 +555,7 @@ Reveal.addEventListener( 'customevent', function() {
 				progress: true,
 				history: true,
 				center: true,
+				slideNumber: true,
 
 				transition: 'slide', // none/fade/slide/convex/concave/zoom
 
