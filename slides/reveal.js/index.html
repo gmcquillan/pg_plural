@@ -399,6 +399,58 @@ select upsert_test_count(
 		
 				</section>
 
+				<section>
+					<h2>Read Latency</h2>
+		
+				</section>
+
+				<section>
+					<h2>Read Variability</h2>
+					<p>Total numbers of test data for a given id are highly variable.</p>
+				</section>
+
+				<section>
+					<h2>Wrap Up: Postgres for Distributed OLAP</h2>
+					<ul>
+						<li>Postgres can scale horizontally.</li>
+						<li>Write throughput ~= Hbase system.</li>
+						<li>New features are a few lines of SQL</li>
+						<li>We <strong>retain</strong> queryability and DDLs</li>
+						<li>Operational concerns only get worse :(</li>
+					</ul>
+				</section>
+
+				<section>
+					<h1>Remaining Work</h1>
+				</section>
+
+				<section>
+					<h2>Future Features</h2>
+					<ul>
+						<li>Cross table joins</li>
+						<li>Automated failovers(shards)</li>
+						<li>Automated, efficient backups</li>
+					<ul>
+				</section>
+
+				<section>
+					<h1>Thank You</h1>
+				</section>
+
+				<section>
+					<h2>References</h2>
+					<ul>
+						<li><a href="http://plproxy.projects.pgfoundry.org/doc/syntax.html">PLProxy Syntax Reference</a></li>
+						<li><a href="http://plproxy.projects.pgfoundry.org/doc/faq.html">PLProxy FAQ</a></li>
+						<li><a href="https://www.youtube.com/watch?v=5ZjhNTM8XU8">Martin Kleppmann on Transactions [VIDEO]</a></li>
+						<li><a href="http://www.depesz.com/2011/12/02/the-secret-ingredient-in-the-webscale-sauce/">depesz.com</a></li>
+						<li><a href="http://en.pgconf.ru/static/presentations/2015/urbanski.pdf">Urbanski Presentation at pgconf.ru [PDF]</a></li>
+						<li><a href="http://www.postgresql.org/docs/current/interactive/explicit-locking.html#LOCKING-DEADLOCKS">Deadlocks in Postgresql</a></li>
+					</ul>
+
+				</section>
+
+
 
 
 			</div>
