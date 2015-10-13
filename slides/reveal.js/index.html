@@ -286,9 +286,10 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h2>Simple Topology Throughput (Graph)</h2>
-					<p>{Graph goes here}</p>
+					<h2>Simple Topology Throughput</h2>
+					<img src="images/throughput_simple.png" />
 				</section>
+
 
 				<section>
 					<h2>Advanced Topology, Fresh</h2>
@@ -333,10 +334,14 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h2>Advanced Topology Throughput (Graph)</h2>
-					<p>{Graph goes here}</p>
+					<h2>Advanced Topology Throughput (2MM)</h2>
+					<img src="images/throughput_advanced.png" />
 				</section>
 
+				<section>
+					<h2>Direct Comparison (2MM)</h2>
+					<img src="images/throughput_advanced_vs_simple.png" />
+				</section>
 
 				<section>
 					<h1>Right, but how does it perform on a loaded Cluster?</h1>
@@ -396,7 +401,7 @@ select upsert_test_count(
 
 				<section>
 					<h2>Loaded Results</h2>
-		
+					<img src="images/throughput_advanced_load.png" />
 				</section>
 
 				<section>
@@ -431,6 +436,12 @@ select upsert_test_count(
 						<li>Automated failovers(shards)</li>
 						<li>Automated, efficient backups</li>
 					<ul>
+				</section>
+
+				<section>
+					<h2>Work is Ongoing</h2>
+					<p>Ansible automation for setting up a test cluster</p>
+					<p><a href="https://github.com/gmcquillan/pg_plural">github.com/gmcquillan/pg_plural</a></p>
 				</section>
 
 				<section>
