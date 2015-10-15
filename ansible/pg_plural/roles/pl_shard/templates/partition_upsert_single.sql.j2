@@ -1,0 +1,59 @@
+-- Run this on part01 and part02 only
+
+{% for table in pg_plural_tables %}
+CREATE OR REPLACE FUNCTION upsert_{{ table.name }}(
+    {% for column_name, column_type in table.rows %}
+      in_{{ column_name }} {{ column_type }}{% if not loop.last %},{% endif %}
+   {% endfor %}
+    ) RETURNS int
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    UPDATE {{ table.name }} SET {{ table.partition_column }}=hll_add({{ table.partition_column }}, hll_hash_text(in_{{ table.partition_column }}))
+      {% for column_name, column_type in table.rows %}
+      {%- if column_name == table.partition_column %}{% continue %}{% endif %}
+      {% if loop.first %}
+        WHERE {{ column_name }}=in_{{ column_name }}
+      {% elif loop.last %}
+        AND {{ column_name }}=in_{{ column_name }};
+      {% else %}
+        AND {{ column_name }}=in_{{ column_name }}
+      {% endif %}
+      {% endfor %}
+
+    IF FOUND THEN
+        RETURN 0;
+    END IF;
+    BEGIN
+        INSERT INTO {{ table.name }} ({% for column_name, column_type in table.rows %}{{ column_name }}{% if not loop.last %},{% endif %}{% endfor %})
+          VALUES ({% for column_name, column_type in table.rows %}{% if column_name != table.partition_column %}in_{{ column_name }}{% else %} hll_empty() {% endif %}{% if not loop.last %},{% endif %}{% endfor %});
+        UPDATE {{ table.name }} SET {{ table.partition_column }}=hll_add({{ table.partition_column }}, hll_hash_text(in_{{ table.partition_column }}))
+      {% for column_name, column_type in table.rows %}
+      {% if column_name == table.partition_column %}{% continue %}{% endif %}
+      {% if loop.first %}
+        WHERE {{ column_name }}=in_{{ column_name }}
+      {% elif loop.last %}
+        AND {{ column_name }}=in_{{ column_name }};
+      {% else %}
+        AND {{ column_name }}=in_{{ column_name }}
+      {% endif %}
+      {% endfor %}
+    EXCEPTION WHEN OTHERS THEN
+       UPDATE {{ table.name }} SET {{ table.partition_column }}=hll_add({{ table.partition_column }}, hll_hash_text(in_{{ table.partition_column }}))
+      {% for column_name, column_type in table.rows %}
+      {% if column_name == table.partition_column %}{% continue %}{% endif %}
+      {% if loop.first %}
+        WHERE {{ column_name }}=in_{{ column_name }}
+      {% elif loop.last %}
+        AND {{ column_name }}=in_{{ column_name }};
+      {% else %}
+        AND {{ column_name }}=in_{{ column_name }}
+      {% endif %}
+      {% endfor %}
+ 
+    END;
+    RETURN 1;
+END;
+$$;
+
+{% endfor %}

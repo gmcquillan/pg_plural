@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION upsert_push_hll(
+    {% for row in rows %}
+	in_{{ row['column_name'] }} {{ row['column_type'] }}[]{% if not loop.last %},{% endif %}
+    {% endfor %}
+    ) RETURNS TABLE (updates int)
+    LANGUAGE plproxy
+    AS $$
+    CLUSTER '{{ cluster_name }}';
+    SPLIT ALL ;
+    RUN ON hashtext(in_{{ partition_column }});
+$$;

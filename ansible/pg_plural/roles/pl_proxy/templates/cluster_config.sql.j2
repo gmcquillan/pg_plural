@@ -1,0 +1,13 @@
+CREATE OR REPLACE FUNCTION plproxy.get_cluster_config(
+    in cluster_name text,
+    out key text,
+    out val text)
+RETURNS SETOF record AS $$
+BEGIN
+    -- lets use same config for all clusters
+    key := 'connection_lifetime';
+    val := 30*60; -- 30m
+    RETURN NEXT;
+    RETURN;
+END;
+$$ LANGUAGE plpgsql;

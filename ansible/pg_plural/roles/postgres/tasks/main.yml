@@ -1,0 +1,25 @@
+---
+# Postgres Tasks 
+
+# Setup PG apt-source repository for newer versions of PG.
+- name: install postgres and friends
+  apt: name={{ item }} state=present
+  become: yes
+  become_method: sudo
+  with_items: 
+    - postgresql-{{ postgres_version }}
+    - postgresql-{{ postgres_version }}-plproxy
+    - postgresql-hll
+
+# Will get to this soon
+#- name: setup postgresql.conf 
+
+- name: setup pg_hba.conf
+  template: src=pg_hba.conf.j2 dest=/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf
+  become: yes 
+  become_method: sudo
+  notify:
+    - reload postgresql
+
+- name: start postgres
+  service: name=postgresql state=started enabled=yes
