@@ -66,6 +66,7 @@
 						<li>New dimensions multiply writes</li>
 						<li>Double counting</li>
 						<li>Changing schema is hard</li>
+						<li>Consistent backups?</li>
 					</ul>
 				</section>
 
@@ -73,6 +74,7 @@
 					<h2>Exploring Solutions</h2>
 					<p>Postgres is pretty nice to work with.</p>
 					<p>Makes adhoc analytics simple.</p>
+					<p>Well known replication and backup story</p>
 				</section>
  
 				<section>
@@ -120,15 +122,22 @@
 				<section>
 					<h1>Experimental Design</h1>
 				</section>
- 
-				<section>
-					<h2>Logical Layout</h2>
-					<p>{image of layout 1}</p>
+
+ 				<section>
+					<h2>Physical Layout</h2>
+					<p>Three Dell R610s with:</p>
+					<ul>
+						<li>2 8-core Xeon CPUs</li>
+						<li>6 SSDs in a RAID 10 configuration (~300GB usable)</li>
+						<li>write-back cache enabled on the I/O controller</li>
+						<li>48GB of ECC RAM.</li>
+						<li>Bonded Ethernet interfaces</li>
+					</ul>
 				</section>
 
 				<section>
-					<h2>Physical Layout</h2>
-					<p>{image of layout 1}</p>
+					<h2>Simple Topology</h2>
+					<img src="images/simple_topology.png" />
 				</section>
 
 				<section>
@@ -180,16 +189,34 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h2>Still too slow</h2>
-					<p>A transaction per tuple just won't work long-term</p>
+					<h2>Postgres Tuning Parameters</h2>
+
+					<ol>
+						<li><strong>shared_buffers -> 10GB</strong> (25% for memory)</li>
+						<li><strong>effective_cache_size -> 30GB</strong> (75%)</li>
+						<li><strong>work_mem -> 50MB</strong> (this is useful for things like sorting, etc. it's also per-session)</li>
+						<li><strong>random_page_cost -> 2.0</strong> (default is 4.0; these are SSDs so random reads/writes aren't as much of a problem)</li>
+						<li><strong>checkpoint_segments -> 256</strong> (default is usually 32; number of WAL segments to buffer before writing to disk)</li>
+					<ol>
+
 				</section>
 
 				<section>
 					<h2>Indexes</h2>
+
+					<p>Optimum index configuration (3/4 dimensions indexed):</p>
+
+					<pre><code data-trim contenteditable>
+create index on test_counts (id, date, hour) with(fillfactor=10);
+				</code></pre>
+
+					<p>The fillfactor tells Postgres to pre-allocate 90% of the index space empty, copy data less.</p>
 				</section>
 
 				<section>
-					<h2>Advanced Logical Layout</h2>
+					<h2>Still too slow</h2>
+					<p>~2,000 events/sec</p>
+					<p>A transaction per tuple just won't work long-term</p>
 				</section>
 
 				<section>
@@ -227,21 +254,38 @@ select upsert_test_count(
 
 				<section>
 					<h2>Anatomy of a PLProxy Transaction</h2>
-					<p>{transaction diagram}</p>
+					<img src="images/transaction_good.png" />
+				</section>
+
+				<section>
+					<h2>When Things Go Wrong</h2>
+					<img src="images/transaction_bad.png" />
 				</section>
 
 				<section>
 					<h2>Deadlock detected!</h2>
-					<p>{transaction diagram w/ deadlock explain}</p>
+					<img src="images/deadlock.png" />
 				</section>
-
 
 				<section>
 					<h2>Deadlock Solutions</h2>
 					<ul>
-						<li>Sort tuples before submitting them</li>
+						<li>Sort tuples before submitting them*</li>
 						<li>Single writer pattern</li>
 					</ul>
+					<p>* Only decreases odds of deadlock</p>
+				</section>
+
+				<section>
+					<h2>Simple Topology</h2>
+					<p>Peaks out with tuning, indexes, and batching at <strong>11k events/sec</strong></p>
+					<p>Next step is to increase parallelism</p>
+
+				</section>
+
+				<section>
+					<h2>Advanced Topology</h2>
+					<img src="images/advanced_topology.png" />
 				</section>
 
 
@@ -250,87 +294,8 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h2>Simple Topology, Fresh DB</h2>
-					<p>Two nodes, two partitions.</p>
-					<p>200K rows.</p>
-
-					<table>
-						<thead>
-							<tr>
-								<th>Batch Size</th>
-								<th>Throughput</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>1024</td>
-								<td>7,554</td>
-							</tr>
-							<tr>
-								<td>2048</td>
-								<td>7,761</td>
-							</tr>
-							<tr>
-								<td>4096</td>
-								<td>10,233</td>
-							</tr>
-							<tr>
-								<td>8192</td>
-								<td>11,021</td>
-							</tr>
-
-
-						</tbody>
-					</table>
-
-				</section>
-
-				<section>
-					<h2>Simple Topology Throughput</h2>
+					<h2>Simple Topology Throughput (200K)</h2>
 					<img src="images/throughput_simple.png" />
-				</section>
-
-
-				<section>
-					<h2>Advanced Topology, Fresh</h2>
-					<p>Three nodes, three partitions</p>
-					<p>200K rows.</p>
-					<table>
-						<thead>
-							<tr>
-								<th>Batch Size</th>
-								<th>Throughput</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>4096</td>
-								<td>23,752</td>
-							</tr>
-						</tbody>
-					</table>
-
-					<p>2MM rows.</p>
-
-					<table>
-						<thead>
-							<tr>
-								<th>Batch Size</th>
-								<th>Throughput</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>4096</td>
-								<td>23,588</td>
-							</tr>
-							<tr>
-								<td>8192</td>
-								<td>22,114</td>
-							</tr>
-
-						</tbody>
-					</table>
 				</section>
 
 				<section>
@@ -344,7 +309,7 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h1>Right, but how does it perform on a loaded Cluster?</h1>
+					<h1>Let's See Results on a Loaded Cluster!</h1>
 				</section>
 
 				<section>
@@ -357,7 +322,6 @@ select upsert_test_count(
 
 				<section>
 					<h2>Setting up a loaded system</h2>
-
 
 					<table>
 						<thead>
@@ -435,6 +399,7 @@ select upsert_test_count(
 						<li>Cross table joins</li>
 						<li>Automated failovers(shards)</li>
 						<li>Automated, efficient backups</li>
+						<li>Tools to help migrate data, add partitions</li>
 					<ul>
 				</section>
 
@@ -494,6 +459,7 @@ select upsert_test_count(
 					{ src: 'plugin/notes/notes.js', async: true }
 				]
 			});
+			Reveal.configure({ slideNumber: 'c / t' });
 
 		</script>
 
