@@ -83,17 +83,6 @@
 					<p>Operationally complex</p>
 				</section>
 
-				<!-- relevance? -->
-				<section>
-					<h2>Projects to help</h2>
-					<ul>
-						<li>Postgres-xc</li>
-						<li>Bucardo</li>
-						<li>Pg-shard</li>
-						<li>PLProxy &amp; Skytools</li>
-					</ul>
-				</section>
-
 				<section>
 					<h2>I chose PLProxy</h2>
 					<ul>
@@ -191,13 +180,40 @@ select upsert_test_count(
 				<section>
 					<h2>Postgres Tuning Parameters</h2>
 
-					<ol>
-						<li><strong>shared_buffers -> 10GB</strong> (25% for memory)</li>
-						<li><strong>effective_cache_size -> 30GB</strong> (75%)</li>
-						<li><strong>work_mem -> 50MB</strong> (this is useful for things like sorting, etc. it's also per-session)</li>
-						<li><strong>random_page_cost -> 2.0</strong> (default is 4.0; these are SSDs so random reads/writes aren't as much of a problem)</li>
-						<li><strong>checkpoint_segments -> 256</strong> (default is usually 32; number of WAL segments to buffer before writing to disk)</li>
-					<ol>
+					<table>
+						<thead>
+							<tr>
+								<th>Config Parameter</th>
+								<th>My Setting</th>
+								<th>Notes</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>shared_buffers</td>
+								<td>10GB</td>
+								<td>25% of memory</td>
+							</tr>
+							<tr>
+								<td>effective_cache_size</td>
+								<td>30GB</td>
+								<td>75% of memory</td>
+							</tr>
+							<tr>
+								<td>work_mem</td>
+								<td>50MB</td>
+								<td>sorting, etc. it's also per-session</td>
+							</tr>
+							<tr>
+								<td>random_page_cost</td>
+								<td>2.0</td>
+								<td>default is 4.0; SSDs here.</td>
+							</tr>
+								<td>checkpoint_segments</td>
+								<td>256</td>
+								<td>default 32; number WAL segments to buffer</td>
+						</tbody>
+					</table>
 
 				</section>
 
@@ -369,13 +385,62 @@ select upsert_test_count(
 				</section>
 
 				<section>
+					<h2>Read Query</h2>
+					<pre><code data-trim contenteditable>
+SELECT id, date, hour, hll_cardinality(event_ids)
+FROM dynamic_query(  
+	'SELECT * from test_counts 
+	WHERE date >= (now() - interval ''7 days'')  
+	   AND id = ''M2E0MDdlNzYtY2Y4NC00Nz'''  
+) AS (  
+    id char(22),date date,hour smallint,event_ids hll, cat text)   
+ORDER BY   
+    date desc,   
+    hour desc   
+LIMIT 10;  
+
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Read Query</h2>
+					<pre><code data-trim contenteditable>
+
+         id        	    |    date    | hour | hll_cardinality   
+------------------------+------------+------+-----------------  
+ M2E0MDdlNzYtY2Y4NC00Nz | 2015-06-10 |   18 |               6  
+ M2E0MDdlNzYtY2Y4NC00Nz | 2015-06-10 |   13 |               6  
+ M2E0MDdlNzYtY2Y4NC00Nz | 2015-06-10 |   13 |               6  
+ M2E0MDdlNzYtY2Y4NC00Nz | 2015-06-10 |    6 |               6  
+ M2E0MDdlNzYtY2Y4NC00Nz | 2015-06-10 |   21 |               5  
+					</code></pre>
+				</section>
+
+				<section>
 					<h2>Read Latency</h2>
+					<p>Generally 10's to 100's of ms</p>
 		
 				</section>
 
 				<section>
 					<h2>Read Variability</h2>
 					<p>Total numbers of test data for a given id are highly variable.</p>
+				</section>
+
+				<section>
+					<h2>Inspect Variability</h2>
+					<pre><code data-trim contenteditable>
+SELECT id, sum(count)
+FROM dynamic_query(
+	'SELECT id, count(push_ids) FROM test_counts GROUP BY id'
+) AS (id char(22), count bigint)
+GROUP BY id ORDER by sum DESC LIMIT 20; 	
+
+       id 				|  sum    
+------------------------+-------  
+ NTdlYWE3N2QtNDg0My00ND | 15953  
+ NjU5MDVjMWYtNDI1OC00NG | 15949
+					</code></pre>
 				</section>
 
 				<section>
@@ -400,6 +465,7 @@ select upsert_test_count(
 						<li>Automated failovers(shards)</li>
 						<li>Automated, efficient backups</li>
 						<li>Tools to help migrate data, add partitions</li>
+						<li>Integrating PGBouncer</li>
 					<ul>
 				</section>
 
