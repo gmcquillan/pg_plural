@@ -1,13 +1,46 @@
 ---
 # PL_Shard -- using PL Proxy to shard requests across databases.
 
+# 1. Setup our test user.
 - name: create our test user
   shell: createuser -s {{ shard_user_name }}
-
-
-# 1. Create each database we know about on each host we know about.
+  ignore_errors: yes
 
 # 2. Create the plproxy schema on each database
+# NB: these references to pg_plural_databases assume all databases are present
+# on a single machine.
+- name: Upload cluster config
+  template: src=cluster_config.sql.j2 dest=/tmp/cluster_config.sql
+
+- name: Execute cluster config
+  shell: psql -d {{ item.database_name }} -f /tmp/cluster_config.sql
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
+- name: Upload cluster version 
+  template: src=cluster_version.sql.j2 dest=/tmp/cluster_version.sql
+
+- name: Execute cluster version
+  shell: psql -d {{ item.database_name }} -f /tmp/cluster_version.sql
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
+- name: Upload server setup 
+  template: src=setup_server.sql.j2 dest=/tmp/setup_server.sql
+
+- name: Execute server_setup
+  shell: psql -d {{ item.database_name }} -f /tmp/setup_server.sql
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
+- name: Upload cluster partitions 
+  template: src=cluster_partitions.sql.j2 dest=/tmp/cluster_partitions.sql
+
+- name: Execute cluster partition definition
+  shell: psql -d {{ item.database_name }} -f /tmp/cluster_partitions.sql
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
 
 # 3. Create the sharded table(s)
 

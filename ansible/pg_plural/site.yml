@@ -6,6 +6,7 @@
   remote_user: vagrant
 
   roles:
+    - pl_proxy
 #    - common
 #    - postgres
-    - pl_shard
+#    - pl_shard

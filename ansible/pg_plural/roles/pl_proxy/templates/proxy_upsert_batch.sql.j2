@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION upsert_push_hll(
     ) RETURNS TABLE (updates int)
     LANGUAGE plproxy
     AS $$
-    CLUSTER '{{ cluster_name }}';
+    CLUSTER '{{ pg_plural_cluster_name }}';
     SPLIT ALL ;
     RUN ON hashtext(in_{{ partition_column }});
 $$;
