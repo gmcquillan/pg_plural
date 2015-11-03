@@ -9,27 +9,28 @@ partition_id_prefix: p
 shard_user_name: vagrant
 # Manually mapping this out temporarily.
 pg_plural_databases:
-  - { database_name: part0, database_id: 0, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part1, database_id: 1, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part2, database_id: 2, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part3, database_id: 3, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part4, database_id: 4, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part5, database_id: 5, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part6, database_id: 6, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part7, database_id: 7, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part8, database_id: 8, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part9, database_id: 9, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part10, database_id: 10, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part11, database_id: 11, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part12, database_id: 12, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part13, database_id: 13, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part14, database_id: 14, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
-  - { database_name: part15, database_id: 15, ip: "{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}" }
+  - { database_name: part0, database_id: 0, ip: "127.0.0.1"}
+  - { database_name: part1, database_id: 1, ip: "127.0.0.1"}
+  - { database_name: part2, database_id: 2, ip: "127.0.0.1"}
+  - { database_name: part3, database_id: 3, ip: "127.0.0.1"}
+  - { database_name: part4, database_id: 4, ip: "127.0.0.1"}
+  - { database_name: part5, database_id: 5, ip: "127.0.0.1"}
+  - { database_name: part6, database_id: 6, ip: "127.0.0.1"}
+  - { database_name: part7, database_id: 7, ip: "127.0.0.1"}
+  - { database_name: part8, database_id: 8, ip: "127.0.0.1"}
+  - { database_name: part9, database_id: 9, ip: "127.0.0.1"}
+  - { database_name: part10, database_id: 10, ip: "127.0.0.1"}
+  - { database_name: part11, database_id: 11, ip: "127.0.0.1"}
+  - { database_name: part12, database_id: 12, ip: "127.0.0.1"}
+  - { database_name: part13, database_id: 13, ip: "127.0.0.1"}
+  - { database_name: part14, database_id: 14, ip: "127.0.0.1"}
+  - { database_name: part15, database_id: 15, ip: "127.0.0.1"}
 
 pg_plural_tables:
   - name: test_counts
     partition_column: event_ids
     # These are <column_name>, <column_type>.
+    hll_intermediate_type: TEXT
     rows:
       - [id, CHAR(22)]
       - [date, DATE]

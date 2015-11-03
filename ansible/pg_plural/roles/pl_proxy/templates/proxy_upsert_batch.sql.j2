@@ -1,6 +1,6 @@
-CREATE OR REPLACE FUNCTION upsert_push_hll(
+CREATE OR REPLACE FUNCTION upsert_test_counts(
     {% for row in rows %}
-	in_{{ row['column_name'] }} {{ row['column_type'] }}[]{% if not loop.last %},{% endif %}
+	in_{{ row['column_name'] }} {% if row['colmn_name'] == partition_column %} {{ hll_intermediate }} {% else %} {{ row['column_type'] }}[] {% endif %}{% if not loop.last %},{% endif %}
     {% endfor %}
     ) RETURNS TABLE (updates int)
     LANGUAGE plproxy
