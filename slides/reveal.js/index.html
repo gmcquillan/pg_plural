@@ -88,7 +88,7 @@
  
 				<section>
 					<h2>Problems with Postgres</h2>
-					<p>Not particularly good at scaling writes</p>
+					<p>Not particularly good at scaling writes horizontally</p>
 					<p>Operationally complex</p>
 				</section>
 
@@ -370,18 +370,17 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h2>Advanced Topology</h2>
-					<img src="images/advanced_topology.png" />
-				</section>
-
-
-				<section>
-					<h1>Experimental Results</h2>
+					<h1>Benchmark Results</h2>
 				</section>
 
 				<section>
 					<h2>Simple Topology Throughput (200K)</h2>
 					<img src="images/throughput_simple.png" />
+				</section>
+
+				<section>
+					<h2>Advanced Topology</h2>
+					<img src="images/advanced_topology.png" />
 				</section>
 
 				<section>
@@ -489,27 +488,6 @@ id        	    |    date    | hour | hll_cardinality
 					<h2>Read Latency</h2>
 					<p>Generally 10's to 100's of ms</p>
 		
-				</section>
-
-				<section>
-					<h2>Read Variability</h2>
-					<p>Total numbers of test data for a given id are highly variable.</p>
-				</section>
-
-				<section>
-					<h2>Inspect Variability</h2>
-					<pre><code data-trim contenteditable>
-SELECT id, sum(count)
-FROM dynamic_query(
-	'SELECT id, count(push_ids) FROM test_counts GROUP BY id'
-) AS (id char(22), count bigint)
-GROUP BY id ORDER by sum DESC LIMIT 20; 	
-
-id 				|  sum    
-------------------------+-------  
- NTdlYWE3N2QtNDg0My00ND | 15953  
- NjU5MDVjMWYtNDI1OC00NG | 15949
-					</code></pre>
 				</section>
 
 				<section>
