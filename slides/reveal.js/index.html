@@ -60,6 +60,15 @@
 				</section>
 
 				<section>
+					<h2>Our Topic</h2>
+					<ol>
+						<li>Problem Statement</li>
+						<li>Exploration of Solutions</li>
+						<li>Benchmarking Solutions</li>
+					</ol>
+				</section>
+
+				<section>
 					<h2>The Problem</h2>
 					<ul>
 						<li>Data consistency</li>
@@ -95,7 +104,7 @@
 				</section>
 
 				<section>
-					<h2>I Chose PLProxy</h2>
+					<h2>PLProxy</h2>
 					<ul>
 						<li>Simple API</li>
 						<li>Battle tested</li>
@@ -104,7 +113,6 @@
 					</ul>
 				</section>
 
-
 				<section>
 					<h2>Approach</h2>
 					<p>Two phase commit</p>
@@ -112,10 +120,55 @@
 				</section>
 
 				<section>
-					<h2>HyperLogLog</h2>
+					<h2>Idempotent Writes with HyperLogLog</h2>
 					<p>Postgres-hll extension</p>
 					<p>Commutative, idempotent</p>
 					<p>Fast, approximate, cardinality</p>
+				</section>
+
+				<section>
+					<h2>Briefly, how Hyperloglog works</h2>
+				</section>
+
+				<section>
+					<h1>PLProxy: Setting up Foreign Data Wrappers in SQL.</h2>
+				</section>
+
+				<section>
+					<h2>Cluster Config</h2>
+					<p>Partition defs, cluster version, connection config elided</p>
+					<p>Partition mapping is as follows:</p>
+				</section>
+
+				<section>
+					<h2>Partition Mapping</h2>
+					<pre><code data-trim contenteditable>
+REATE FOREIGN DATA WRAPPER plproxy;
+
+CREATE SERVER naboocounts FOREIGN DATA WRAPPER plproxy
+OPTIONS (connection_lifetime '1800',
+         p0 'dbname=part00 host=10.130.1.38',
+         p1 'dbname=part01 host=10.130.1.39' );
+
+-- This mapping is accessible to all local users
+CREATE USER MAPPING FOR PUBLIC SERVER naboocounts;
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Proxy Functions</h2>
+					<pre><code data-trim contenteditable>
+CREATE OR REPLACE FUNCTION upsert_count(
+	in_id text, in_date date, in_hour smallint,
+	in_event_id text, in_category text
+) RETURNS TABLE (updates int)
+	LANGUAGE plproxy
+	AS $$
+	CLUSTER 'testcounts';
+	SPLIT ALL;
+	RUN ON hashtext(in_event_id);
+$$;
+					</code></pre>
 				</section>
 
 				<section>
@@ -192,46 +245,6 @@ select upsert_test_count(
 					</code></pre>
 				</section>
 
-				<section>
-					<h1>Setting up Remote PLProxy Functions</h2>
-				</section>
-
-				<section>
-					<h2>Cluster Config</h2>
-					<p>Partition defs, cluster version, connection config elided</p>
-					<p>Partition mapping is as follows:</p>
-				</section>
-
-				<section>
-					<h2>Partition Mapping</h2>
-					<pre><code data-trim contenteditable>
-REATE FOREIGN DATA WRAPPER plproxy;
-
-CREATE SERVER naboocounts FOREIGN DATA WRAPPER plproxy
-OPTIONS (connection_lifetime '1800',
-         p0 'dbname=part00 host=10.130.1.38',
-         p1 'dbname=part01 host=10.130.1.39' );
-
--- This mapping is accessible to all local users
-CREATE USER MAPPING FOR PUBLIC SERVER naboocounts;
-					</code></pre>
-				</section>
-
-				<section>
-					<h2>Proxy Functions</h2>
-					<pre><code data-trim contenteditable>
-CREATE OR REPLACE FUNCTION upsert_count(
-	in_id text, in_date date, in_hour smallint,
-	in_event_id text, in_category text
-) RETURNS TABLE (updates int)
-	LANGUAGE plproxy
-	AS $$
-	CLUSTER 'testcounts';
-	SPLIT ALL;
-	RUN ON hashtext(in_event_id);
-$$;
-					</code></pre>
-				</section>
 
 
 				<section>
