@@ -128,6 +128,7 @@
 
 				<section>
 					<h2>Briefly, how Hyperloglog works</h2>
+					<img data-src="images/hll_diagram.png" alt="hll diagram" />
 				</section>
 
 				<section>
@@ -356,10 +357,10 @@ select upsert_test_count(
 				<section>
 					<h2>Deadlock Solutions</h2>
 					<ul>
-						<li>Sort tuples before submitting them*</li>
+						<li>Sort tuples before submitting them</li>
 						<li>Single writer pattern</li>
 					</ul>
-					<p>* Only decreases odds of deadlock</p>
+					<p>Our functions make sorting difficult, so single writer</p>
 				</section>
 
 				<section>
@@ -552,7 +553,7 @@ id        	    |    date    | hour | hll_cardinality
 			// Full list of configuration options available at:
 			// https://github.com/hakimel/reveal.js#configuration
 			Reveal.initialize({
-				controls: true,
+				controls: false,
 				progress: true,
 				history: true,
 				center: true,
