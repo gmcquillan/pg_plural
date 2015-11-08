@@ -1,5 +1,3 @@
--- Run this on part01 and part02 only
-
 {% for table in pg_plural_tables %}
 CREATE OR REPLACE FUNCTION upsert_{{ table.name }}(
     {% for column_name, column_type in table.rows %}

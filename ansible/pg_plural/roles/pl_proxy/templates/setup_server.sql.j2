@@ -1,6 +1,6 @@
 CREATE FOREIGN DATA WRAPPER plproxy;
 
-CREATE SERVER naboocounts FOREIGN DATA WRAPPER plproxy
+CREATE SERVER {{ pg_plural_cluster_name }} FOREIGN DATA WRAPPER plproxy
 OPTIONS (connection_lifetime '1800',
          -- For example: 
          -- p0 'dbname=part00 host=10.130.1.38',

@@ -44,3 +44,10 @@
 - name: Create upsert_batch function(s)
   shell: psql -d {{ item.database_name }} -f /tmp/upsert_batch_*
   with_items: "{{ pg_plural_databases }}"
+
+- name: Upload dynamic query shard
+  template: src=dynamic_query_shard.sql.j2 dest=/tmp/dynamic_query_shard.sql
+
+- name: Create dynamic query shard functions.
+  shell: psql -d {{ item.database_name }} -f /tmp/dynamic_query_shard_*
+  with_items: "{{ pg_plural_databases }}"
