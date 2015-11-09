@@ -146,13 +146,13 @@
 					<pre><code data-trim contenteditable>
 REATE FOREIGN DATA WRAPPER plproxy;
 
-CREATE SERVER naboocounts FOREIGN DATA WRAPPER plproxy
+CREATE SERVER testcounts FOREIGN DATA WRAPPER plproxy
 OPTIONS (connection_lifetime '1800',
          p0 'dbname=part00 host=10.130.1.38',
          p1 'dbname=part01 host=10.130.1.39' );
 
 -- This mapping is accessible to all local users
-CREATE USER MAPPING FOR PUBLIC SERVER naboocounts;
+CREATE USER MAPPING FOR PUBLIC SERVER testcounts;
 					</code></pre>
 				</section>
 
@@ -171,6 +171,12 @@ CREATE OR REPLACE FUNCTION upsert_count(
 $$;
 					</code></pre>
 				</section>
+
+				<section>
+					<h2>PL Syntax Explained</h2>
+					<img src="images/pl_functions.png" />
+				</section>
+
 
 				<section>
 					<h1>Experimental Design</h1>
