@@ -30,7 +30,7 @@ pg_plural_tables:
   - name: test_counts
     partition_column: event_ids
     # These are <column_name>, <column_type>.
-    hll_intermediate_type: TEXT
+    hll_intermediate_type: TEXT # Used for accepting raw data
     rows:
       - [id, CHAR(22)]
       - [date, DATE]

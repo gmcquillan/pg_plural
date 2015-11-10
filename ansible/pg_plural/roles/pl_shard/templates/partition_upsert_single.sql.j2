@@ -1,7 +1,7 @@
 {% for table in pg_plural_tables %}
 CREATE OR REPLACE FUNCTION upsert_{{ table.name }}(
     {% for column_name, column_type in table.rows %}
-      in_{{ column_name }} {{ column_type }}{% if not loop.last %},{% endif %}
+	in_{{ row['column_name'] }} {% if row['column_name'] == partition_column %} {{ hll_intermediate_type }} {% else %} {{ row['column_type'] }} {% endif %}{% if not loop.last %},{% endif %}
    {% endfor %}
     ) RETURNS int
     LANGUAGE plpgsql
