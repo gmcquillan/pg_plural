@@ -8,7 +8,7 @@ NUM_BATCHES = [
 
 # Test specific stuff
 # TODO(gavin) make this read ansible data to construct the base template.
-FUNCTION_NAME = 'test_counts'
+FUNCTION_NAME = 'proxy_upsert_test_counts'
 OUT_FILE_NAME_TEMPL = "{0}-{1}-size-{2}-batches.sql"
 
 SQL_TEMPL = ("select {0}('{{{1}}}'::text[], '{{{2}}}'::date[], '{{{3}}}'"
