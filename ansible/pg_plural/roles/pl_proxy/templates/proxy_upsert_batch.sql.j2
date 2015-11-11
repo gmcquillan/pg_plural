@@ -7,8 +7,8 @@ CREATE OR REPLACE FUNCTION proxy_upsert_{{ table.name }}(
     LANGUAGE plproxy
     AS $$
     CLUSTER '{{ pg_plural_cluster_name }}';
-	TARGET 'upsert_{{ table.name }}';
-    SPLIT ALL ;
+	TARGET upsert_{{ table.name }};
+    SPLIT ALL;
     RUN ON hashtext(in_{{ table.partition_column }});
 $$;
 {% endfor %}
