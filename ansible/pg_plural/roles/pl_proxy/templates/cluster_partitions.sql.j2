@@ -2,8 +2,8 @@ CREATE OR REPLACE FUNCTION plproxy.get_cluster_partitions(cluster_name text)
 RETURNS SETOF text as $$
 BEGIN
    IF cluster_name = '{{ pg_plural_cluster_name }}' THEN
-      {% for db_name, db_id, host in pg_plural_databases %}
-      RETURN NEXT 'dbname={{ db_name }} host={{ host }}';
+      {% for row in pg_plural_databases %}
+      RETURN NEXT 'dbname={{ row.database_name }} host={{ row.ip}}';
       {% endfor %}
       RETURN;
    END IF;

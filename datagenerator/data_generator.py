@@ -125,6 +125,7 @@ class PgDataGenerator(object):
         id = self.get_id()
         return {dim: self.dims[dim](id) for dim in self.dims}
 
+
 NUM_ROWS = 2000
 BATCH_SIZES = [4, 8, 32, 128, 512] # 1024, 2048]
 NUM_BATCHES = [

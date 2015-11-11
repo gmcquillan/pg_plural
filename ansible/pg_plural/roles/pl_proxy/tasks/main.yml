@@ -6,16 +6,36 @@
   shell: createuser -s {{ shard_user_name }}
   ignore_errors: yes
 
-# 2. Create the plproxy schema on each database
-# NB: these references to pg_plural_databases assume all databases are present
-# on a single machine.
+#plproxy--2.5.0.sql  plproxy.control  plproxy--unpackaged--2.5.0.sql
+# NB: these are specific to Postgres 9.4, and Ubuntu!!
+# TODO generify these as soon as possible.
+
+- name: Create plproxy schema
+  shell: psql -d {{ item.database_name }} -c "create schema plproxy;"
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
+- name: Enable PlProxy extension (version specific) on each database
+  shell: psql -d {{ item.database_name }} -f /usr/share/postgresql/9.4/extension/plproxy--2.5.0.sql
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
+- name: Enable PlProxy extension (control) on each database
+  shell: psql -d {{ item.database_name }} -f /usr/share/postgresql/9.4/extension/plproxy.control
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
+- name: Enable PlProxy extension (unpackaged) on each database
+  shell: psql -d {{ item.database_name }} -f /usr/share/postgresql/9.4/extension/plproxy--unpackaged--2.5.0.sql
+  with_items: "{{ pg_plural_databases }}"
+  ignore_errors: yes
+
 - name: Upload cluster config
   template: src=cluster_config.sql.j2 dest=/tmp/cluster_config.sql
 
 - name: Execute cluster config
   shell: psql -d {{ item.database_name }} -f /tmp/cluster_config.sql
   with_items: "{{ pg_plural_databases }}"
-  ignore_errors: yes
 
 - name: Upload cluster version 
   template: src=cluster_version.sql.j2 dest=/tmp/cluster_version.sql
@@ -23,7 +43,6 @@
 - name: Execute cluster version
   shell: psql -d {{ item.database_name }} -f /tmp/cluster_version.sql
   with_items: "{{ pg_plural_databases }}"
-  ignore_errors: yes
 
 - name: Upload server setup 
   template: src=setup_server.sql.j2 dest=/tmp/setup_server.sql
@@ -31,7 +50,6 @@
 - name: Execute server_setup
   shell: psql -d {{ item.database_name }} -f /tmp/setup_server.sql
   with_items: "{{ pg_plural_databases }}"
-  ignore_errors: yes
 
 - name: Upload cluster partitions 
   template: src=cluster_partitions.sql.j2 dest=/tmp/cluster_partitions.sql
@@ -39,7 +57,20 @@
 - name: Execute cluster partition definition
   shell: psql -d {{ item.database_name }} -f /tmp/cluster_partitions.sql
   with_items: "{{ pg_plural_databases }}"
-  ignore_errors: yes
+
+- name: Upload proxy single functions
+  template: src=proxy_upsert_single.sql.j2 dest=/tmp/proxy_upsert_single.sql
+
+- name: Execute proxy single functions
+  shell: psql -d {{ item.database_name }} -f /tmp/proxy_upsert_single.sql
+  with_items: "{{ pg_plural_databases }}"
+
+- name: Upload proxy batch functions
+  template: src=proxy_upsert_batch.sql.j2 dest=/tmp/proxy_upsert_batch.sql
+
+- name: Execute proxy batch functions
+  shell: psql -d {{ item.database_name }} -f /tmp/proxy_upsert_batch.sql
+  with_items: "{{ pg_plural_databases }}"
 
 - name: Upload dynamic query proxy function
   template: src=dynamic_query.sql.j2 dest=/tmp/dynamic_query_proxy.sql
@@ -47,5 +78,4 @@
 - name: Create dyanmic query proxy functions
   shell: psql -d {{ item.database_name }} -f /tmp/dynamic_query_proxy.sql
   with_items: "{{ pg_plural_databases }}"
-  ignore_errors: yes
 
