@@ -7,7 +7,6 @@ BEGIN
       {% endfor %}
       RETURN;
    END IF;
-RAISE EXCEPTION 'unknown cluster'
-;
+RAISE EXCEPTION 'unknown cluster';
 end;
 $$ language plpgsql;

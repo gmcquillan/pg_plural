@@ -6,8 +6,8 @@ OPTIONS (connection_lifetime '1800',
          -- p0 'dbname=part00 host=10.130.1.38',
          -- p1 'dbname=part01 host=10.130.1.39' 
 		 {% for row in pg_plural_databases %}
-		 {{ row.database_id }} 'dbname={{ row.database_name }} host={{ row.ip }}'{% if not loop.last %},{% endif %}
-		 {% endfor %}
+         {{ partition_id_prefix }}{{ row.database_id }} 'dbname={{ row.database_name }} host={{ row.ip }}'{% if not loop.last %},{% endif %}
+         {% endfor %}
 );
 
 -- create PUBLIC mapping that applies for all users in the local system
