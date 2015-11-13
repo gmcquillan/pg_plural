@@ -1,13 +1,12 @@
 CREATE OR REPLACE FUNCTION plproxy.get_cluster_partitions(cluster_name text)
 RETURNS SETOF text as $$
 BEGIN
-   IF cluster_name = '{{ cluster_name }}' THEN
-      {% for part_assig, host in partition_assignments %}
-      RETURN NEXT 'dbname={{ partition_id }} host={{ host }}';
+   IF cluster_name = '{{ pg_plural_cluster_name }}' THEN
+      {% for row in pg_plural_databases %}
+      RETURN NEXT 'dbname={{ row.database_name }} host={{ row.ip}}';
       {% endfor %}
       RETURN;
    END IF;
-RAISE EXCEPTION 'unknown cluster'
-;
+RAISE EXCEPTION 'unknown cluster';
 end;
 $$ language plpgsql;

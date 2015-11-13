@@ -60,6 +60,15 @@
 				</section>
 
 				<section>
+					<h2>Our Topic</h2>
+					<ol>
+						<li>Problem Statement</li>
+						<li>Exploration of Solutions</li>
+						<li>Benchmarking Solutions</li>
+					</ol>
+				</section>
+
+				<section>
 					<h2>The Problem</h2>
 					<ul>
 						<li>Data consistency</li>
@@ -79,21 +88,30 @@
  
 				<section>
 					<h2>Problems with Postgres</h2>
-					<p>Not particularly good at scaling writes</p>
+					<p>Not particularly good at scaling writes horizontally</p>
 					<p>Operationally complex</p>
 				</section>
 
 				<section>
-					<h2>I chose PLProxy</h2>
+					<h2>Existing Solutions</h2>
+					<ul>
+						<li>Postgres-xc/xl</li>
+						<li>Slony</li>
+						<li>Redshift</li>
+						<li>Pg_shard</li>
+						<li>PLProxy</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>PLProxy</h2>
 					<ul>
 						<li>Simple API</li>
 						<li>Battle tested</li>
 						<li>Flexible</li>
+						<li>Easy upgrade paths, no lock-in</li>
 					</ul>
-
-					<p>Maybe better options exist?</p>
 				</section>
-
 
 				<section>
 					<h2>Approach</h2>
@@ -102,14 +120,67 @@
 				</section>
 
 				<section>
-					<h2>HyperLogLog</h2>
+					<h2>Idempotent Writes with HyperLogLog</h2>
 					<p>Postgres-hll extension</p>
 					<p>Commutative, idempotent</p>
 					<p>Fast, approximate, cardinality</p>
 				</section>
 
 				<section>
+					<h2>Briefly, how Hyperloglog works</h2>
+					<img data-src="images/hll_diagram.png" alt="hll diagram" />
+				</section>
+
+				<section>
+					<h1>PLProxy: Setting up Foreign Data Wrappers in SQL.</h2>
+				</section>
+
+				<section>
+					<h2>Cluster Config</h2>
+					<p>Partition defs, cluster version, connection config elided</p>
+					<p>Partition mapping is as follows:</p>
+				</section>
+
+				<section>
+					<h2>Partition Mapping</h2>
+					<pre><code data-trim contenteditable>
+REATE FOREIGN DATA WRAPPER plproxy;
+
+CREATE SERVER testcounts FOREIGN DATA WRAPPER plproxy
+OPTIONS (connection_lifetime '1800',
+         p0 'dbname=part00 host=10.130.1.38',
+         p1 'dbname=part01 host=10.130.1.39' );
+
+-- This mapping is accessible to all local users
+CREATE USER MAPPING FOR PUBLIC SERVER testcounts;
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>Proxy Functions</h2>
+					<pre><code data-trim contenteditable>
+CREATE OR REPLACE FUNCTION upsert_count(
+	in_id text, in_date date, in_hour smallint,
+	in_event_id text, in_category text
+) RETURNS TABLE (updates int)
+	LANGUAGE plproxy
+	AS $$
+	CLUSTER 'testcounts';
+	SPLIT ALL;
+	RUN ON hashtext(in_event_id);
+$$;
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>PL Syntax Explained</h2>
+					<img src="images/pl_functions.png" />
+				</section>
+
+
+				<section>
 					<h1>Experimental Design</h1>
+					<p>Can a sharded postgres reasonably keep up with Hbase?</p>
 				</section>
 
  				<section>
@@ -127,6 +198,10 @@
 				<section>
 					<h2>Simple Topology</h2>
 					<img src="images/simple_topology.png" />
+				</section>
+
+				<section>
+					<h1>Setting up the Shards</h1>
 				</section>
 
 				<section>
@@ -177,6 +252,19 @@ select upsert_test_count(
 					</code></pre>
 				</section>
 
+
+
+				<section>
+					<h2>Indexes</h2>
+
+					<p>Optimum index configuration (3/4 dimensions indexed):</p>
+
+					<pre><code data-trim contenteditable>
+create index on test_counts (id, date, hour) with(fillfactor=10);
+				</code></pre>
+
+					<p>The fillfactor tells Postgres to pre-allocate 90% of the index space empty, copy data less.</p>
+				</section>
 				<section>
 					<h2>Postgres Tuning Parameters</h2>
 
@@ -217,17 +305,6 @@ select upsert_test_count(
 
 				</section>
 
-				<section>
-					<h2>Indexes</h2>
-
-					<p>Optimum index configuration (3/4 dimensions indexed):</p>
-
-					<pre><code data-trim contenteditable>
-create index on test_counts (id, date, hour) with(fillfactor=10);
-				</code></pre>
-
-					<p>The fillfactor tells Postgres to pre-allocate 90% of the index space empty, copy data less.</p>
-				</section>
 
 				<section>
 					<h2>Still too slow</h2>
@@ -286,10 +363,10 @@ select upsert_test_count(
 				<section>
 					<h2>Deadlock Solutions</h2>
 					<ul>
-						<li>Sort tuples before submitting them*</li>
+						<li>Sort tuples before submitting them</li>
 						<li>Single writer pattern</li>
 					</ul>
-					<p>* Only decreases odds of deadlock</p>
+					<p>Our functions make sorting difficult, so single writer</p>
 				</section>
 
 				<section>
@@ -300,18 +377,17 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h2>Advanced Topology</h2>
-					<img src="images/advanced_topology.png" />
-				</section>
-
-
-				<section>
-					<h1>Experimental Results</h2>
+					<h1>Benchmark Results</h2>
 				</section>
 
 				<section>
 					<h2>Simple Topology Throughput (200K)</h2>
 					<img src="images/throughput_simple.png" />
+				</section>
+
+				<section>
+					<h2>Advanced Topology</h2>
+					<img src="images/advanced_topology.png" />
 				</section>
 
 				<section>
@@ -403,10 +479,9 @@ LIMIT 10;
 				</section>
 
 				<section>
-					<h2>Read Query</h2>
+					<h2>Read Query Results</h2>
 					<pre><code data-trim contenteditable>
-
-         id        	    |    date    | hour | hll_cardinality   
+id        	    |    date    | hour | hll_cardinality   
 ------------------------+------------+------+-----------------  
  M2E0MDdlNzYtY2Y4NC00Nz | 2015-06-10 |   18 |               6  
  M2E0MDdlNzYtY2Y4NC00Nz | 2015-06-10 |   13 |               6  
@@ -420,27 +495,6 @@ LIMIT 10;
 					<h2>Read Latency</h2>
 					<p>Generally 10's to 100's of ms</p>
 		
-				</section>
-
-				<section>
-					<h2>Read Variability</h2>
-					<p>Total numbers of test data for a given id are highly variable.</p>
-				</section>
-
-				<section>
-					<h2>Inspect Variability</h2>
-					<pre><code data-trim contenteditable>
-SELECT id, sum(count)
-FROM dynamic_query(
-	'SELECT id, count(push_ids) FROM test_counts GROUP BY id'
-) AS (id char(22), count bigint)
-GROUP BY id ORDER by sum DESC LIMIT 20; 	
-
-       id 				|  sum    
-------------------------+-------  
- NTdlYWE3N2QtNDg0My00ND | 15953  
- NjU5MDVjMWYtNDI1OC00NG | 15949
-					</code></pre>
 				</section>
 
 				<section>
@@ -488,12 +542,10 @@ GROUP BY id ORDER by sum DESC LIMIT 20;
 						<li><a href="http://www.depesz.com/2011/12/02/the-secret-ingredient-in-the-webscale-sauce/">depesz.com</a></li>
 						<li><a href="http://en.pgconf.ru/static/presentations/2015/urbanski.pdf">Urbanski Presentation at pgconf.ru [PDF]</a></li>
 						<li><a href="http://www.postgresql.org/docs/current/interactive/explicit-locking.html#LOCKING-DEADLOCKS">Deadlocks in Postgresql</a></li>
+						<li><a href="http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf">HyperLogLog: the analysis of near-optimal cardinality estimation algorithm - Flajolet [PDF]</a></li>
 					</ul>
 
 				</section>
-
-
-
 
 			</div>
 
@@ -507,7 +559,7 @@ GROUP BY id ORDER by sum DESC LIMIT 20;
 			// Full list of configuration options available at:
 			// https://github.com/hakimel/reveal.js#configuration
 			Reveal.initialize({
-				controls: true,
+				controls: false,
 				progress: true,
 				history: true,
 				center: true,

@@ -1,14 +1,14 @@
 CREATE FOREIGN DATA WRAPPER plproxy;
 
-CREATE SERVER naboocounts FOREIGN DATA WRAPPER plproxy
+CREATE SERVER {{ pg_plural_cluster_name }} FOREIGN DATA WRAPPER plproxy
 OPTIONS (connection_lifetime '1800',
          -- For example: 
          -- p0 'dbname=part00 host=10.130.1.38',
          -- p1 'dbname=part01 host=10.130.1.39' 
-		 {% for db_id, db_name, host in partition_assignments %}
-		 {{ db_id }} 'dbname={{ db_name }} host={{ host }}{% if not loop.last %},{% endif %}
-		 {% endfor %}
+        {% for row in pg_plural_databases %}
+        {{ partition_id_prefix }}{{ row.database_id }} 'dbname={{ row.database_name }} host={{ row.ip }}'{% if not loop.last %},{% endif %}
+         {% endfor %}
 );
 
 -- create PUBLIC mapping that applies for all users in the local system
-CREATE USER MAPPING FOR PUBLIC SERVER {{ cluster_name }};
+CREATE USER MAPPING FOR PUBLIC SERVER {{ pg_plural_cluster_name }};

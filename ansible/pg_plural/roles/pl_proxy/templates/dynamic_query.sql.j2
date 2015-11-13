@@ -1,0 +1,6 @@
+CREATE OR REPLACE FUNCTION proxy_dynamic_query(q text)
+RETURNS SETOF RECORD AS $$
+    CLUSTER '{{ pg_plural_cluster_name }}';
+    TARGET dynamic_query;
+    RUN ON ALL;
+$$ LANGUAGE plproxy;
