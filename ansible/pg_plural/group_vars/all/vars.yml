@@ -29,8 +29,9 @@ pg_plural_databases:
 pg_plural_tables:
   - name: test_counts
     partition_column: event_ids
-    # These are <column_name>, <column_type>.
+    hll_column: event_ids
     hll_intermediate_type: TEXT # Used for accepting raw data
+    # These are <column_name>, <column_type>.
     rows:
       - [id, CHAR(22)]
       - [date, DATE]
