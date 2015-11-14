@@ -2,7 +2,7 @@
 
 CREATE OR REPLACE FUNCTION upsert_{{ table.name }}(
 	{% for column_name, column_type in table.rows %}
-	in_{{ column_name }} {% if column_name == table.partition_column %} {{ table.hll_intermediate_type }}[] {% else %} {{ column_type }}[] {% endif %}{% if not loop.last %},{% endif %}
+	in_{{ column_name }} {% if column_name == table.hll_column %} {{ table.hll_intermediate_type }}[] {% else %} {{ column_type }}[] {% endif %}{% if not loop.last %},{% endif %}
 	{% endfor %}
 
 ) RETURNS TABLE (update int)
