@@ -1,0 +1,20 @@
+---
+
+- name: Reset databases (truncate tables)
+  shell: psql -d {{ item.database_name }} -c "truncate table test_counts;"
+  with_items: "{{ pg_plural_databases }}"
+
+- name: Reset test data
+  shell: rm -rf /tmp/pg_plural_test_data
+
+- copy: src=expected_data/ dest=/tmp/pg_plural_test_data/expected_data
+- copy: src=test_data/ dest=/tmp/pg_plural_test_data/test_data
+
+- name: Execute test data
+  shell: psql -d part0 -f /tmp/pg_plural_test_data/test_data/proxy_upsert_test_counts-512-size-4-batches.sql
+
+- name: get test results 
+  shell: psql -d part0 -c "SELECT id, date, hour, category, hll_cardinality(event_ids) FROM proxy_dynamic_query('SELECT * FROM test_counts') AS (id char(22),  date date, hour smallint,  event_ids hll, category text) ORDER BY date DESC, hour DESC, id DESC;" > /tmp/pg_plural_test_data/test_counts_results.out
+
+- name: verify test results
+  shell: diff /tmp/pg_plural_test_data/test_counts_results.out /tmp/pg_plural_test_data/expected_data/proxy_upsert_test_counts-512-size-4-batches_expected.sql
