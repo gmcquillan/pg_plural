@@ -45,7 +45,7 @@
 					<h3>Postgres as Distributed Online Processing Analytics Engine</h3>
 					<img width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
 					<p>
-						<small>by <a href="http://github.com/gmcquillan">Gavin McQuillan</a> / <a href="http://twitter.com/gmcquillan">@gmcquillan</a></small>
+						by <a href="http://github.com/gmcquillan">Gavin McQuillan</a> / <a href="http://twitter.com/gmcquillan">@gmcquillan</a>
 					</p>
 				</section>
 
@@ -60,15 +60,17 @@
 				</section>
 
 				<section>
-					<h2>Our Topic</h2>
+					<h3>Postgres as Distributed Online Processing Analytics Engine</h3>
 					<ol>
 						<li>Problem Statement</li>
-						<li>Exploration of Solutions</li>
-						<li>Benchmarking Solutions</li>
+                                                <li>Distributed Postgres</li>
+                                                <li>Probabalistic Datastructures</li>
+						<li>Benchmarking Solutions, Unloaded/Loaded.</li>
 					</ol>
 				</section>
 
 				<section>
+					<img style="float:left" width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
 					<h2>The Problem</h2>
 					<ul>
 						<li>Data consistency</li>
@@ -144,7 +146,7 @@
 				<section>
 					<h2>Partition Mapping</h2>
 					<pre><code data-trim contenteditable>
-REATE FOREIGN DATA WRAPPER plproxy;
+CREATE FOREIGN DATA WRAPPER plproxy;
 
 CREATE SERVER testcounts FOREIGN DATA WRAPPER plproxy
 OPTIONS (connection_lifetime '1800',
@@ -179,8 +181,9 @@ $$;
 
 
 				<section>
+
+					<img width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
 					<h1>Experimental Design</h1>
-					<p>Can a sharded postgres reasonably keep up with Hbase?</p>
 				</section>
 
  				<section>
@@ -237,6 +240,8 @@ BEGIN
     RETURN 1;
 END;
 					</code></pre>
+
+                                        <p>Argument types other than hll field elided</p>
 				</section>
 
 				<section>
@@ -255,54 +260,10 @@ select upsert_test_count(
 
 
 				<section>
-					<h2>Indexes</h2>
-
-					<p>Optimum index configuration (3/4 dimensions indexed):</p>
-
-					<pre><code data-trim contenteditable>
-create index on test_counts (id, date, hour) with(fillfactor=10);
-				</code></pre>
-
+					<h2>Tuning</h2>
+					<p>Optimum index configuration (3/4 dimensions indexed)</p>
 					<p>The fillfactor tells Postgres to pre-allocate 90% of the index space empty, copy data less.</p>
-				</section>
-				<section>
-					<h2>Postgres Tuning Parameters</h2>
-
-					<table>
-						<thead>
-							<tr>
-								<th>Config Parameter</th>
-								<th>My Setting</th>
-								<th>Notes</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>shared_buffers</td>
-								<td>10GB</td>
-								<td>25% of memory</td>
-							</tr>
-							<tr>
-								<td>effective_cache_size</td>
-								<td>30GB</td>
-								<td>75% of memory</td>
-							</tr>
-							<tr>
-								<td>work_mem</td>
-								<td>50MB</td>
-								<td>sorting, etc. it's also per-session</td>
-							</tr>
-							<tr>
-								<td>random_page_cost</td>
-								<td>2.0</td>
-								<td>default is 4.0; SSDs here.</td>
-							</tr>
-								<td>checkpoint_segments</td>
-								<td>256</td>
-								<td>default 32; number WAL segments to buffer</td>
-						</tbody>
-					</table>
-
+                                        <p>Standard best practices for workMem, and other memory settings</p>
 				</section>
 
 
@@ -377,6 +338,7 @@ select upsert_test_count(
 				</section>
 
 				<section>
+					<img width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
 					<h1>Benchmark Results</h2>
 				</section>
 
@@ -401,7 +363,8 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h1>Let's See Results on a Loaded Cluster!</h1>
+					<img width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
+					<h2>Benchmarks on a Loaded Cluster</h2>
 				</section>
 
 				<section>
@@ -461,7 +424,7 @@ select upsert_test_count(
 				</section>
 
 				<section>
-					<h2>Read Query</h2>
+					<h2>Read Query (AdHoc)</h2>
 					<pre><code data-trim contenteditable>
 SELECT id, date, hour, hll_cardinality(event_ids)
 FROM dynamic_query(  
@@ -492,12 +455,6 @@ id        	    |    date    | hour | hll_cardinality
 				</section>
 
 				<section>
-					<h2>Read Latency</h2>
-					<p>Generally 10's to 100's of ms</p>
-		
-				</section>
-
-				<section>
 					<h2>Wrap Up: Postgres for Distributed OLAP</h2>
 					<ul>
 						<li>Postgres can scale horizontally.</li>
@@ -509,6 +466,7 @@ id        	    |    date    | hour | hll_cardinality
 				</section>
 
 				<section>
+					<img width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
 					<h1>Remaining Work</h1>
 				</section>
 
@@ -530,6 +488,7 @@ id        	    |    date    | hour | hll_cardinality
 				</section>
 
 				<section>
+					<img width="250" height="300" data-src="images/shard_elephant.png" alt="shard elephant" />
 					<h1>Thank You</h1>
 				</section>
 
