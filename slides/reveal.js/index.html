@@ -95,17 +95,6 @@
 				</section>
 
 				<section>
-					<h2>Existing Solutions</h2>
-					<ul>
-						<li>Postgres-xc/xl</li>
-						<li>Slony</li>
-						<li>Redshift</li>
-						<li>Pg_shard</li>
-						<li>PLProxy</li>
-					</ul>
-				</section>
-
-				<section>
 					<h2>PLProxy</h2>
 					<ul>
 						<li>Simple API</li>
@@ -134,7 +123,7 @@
 				</section>
 
 				<section>
-					<h1>PLProxy: Setting up Foreign Data Wrappers in SQL.</h2>
+					<h2>PLProxy: Setting up Foreign Data Wrappers in SQL.</h2>
 				</section>
 
 				<section>
@@ -168,7 +157,6 @@ CREATE OR REPLACE FUNCTION upsert_count(
 	LANGUAGE plproxy
 	AS $$
 	CLUSTER 'testcounts';
-	SPLIT ALL;
 	RUN ON hashtext(in_event_id);
 $$;
 					</code></pre>
@@ -261,9 +249,11 @@ select upsert_test_count(
 
 				<section>
 					<h2>Tuning</h2>
-					<p>Optimum index configuration (3/4 dimensions indexed)</p>
-					<p>The fillfactor tells Postgres to pre-allocate 90% of the index space empty, copy data less.</p>
-                                        <p>Standard best practices for workMem, and other memory settings</p>
+                                        <ul>
+					<li>Optimum index configuration (3/4 dimensions indexed)</li>
+					<li>The fillfactor tells Postgres to pre-allocate 90% of the index space empty, copy data less.</li>
+                                        <li>Standard best practices for workMem, and other memory settings</li>
+                                        </ul>
 				</section>
 
 
@@ -378,43 +368,24 @@ select upsert_test_count(
 				<section>
 					<h2>Setting up a loaded system</h2>
 
-					<table>
-						<thead>
-							<tr>
-								<th>Cluster State</th>
-								<th>Cluster Size (MB)</th>
-								<th>Index Size(MB)</th>
-								<th>Number of Rows</th>
-								<th>Number of IDs</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>Before</td>
-								<td>63,864</td>
-								<td>21,824</td>
-								<td>333,757,839</td>
-								<td>307,520</td>
-							</tr>
-							<tr>
-								<td>After</td>
-								<td>80,096</td>
-								<td>27,088</td>
-								<td>412,900,728</td>
-								<td>357,520</td>
-							</tr>
+                                        <ol>
+                                            <li>60G of test data</li>
+                                            <li>20G of indexes</li>
+                                            <li>Added 20G more data, and 6G more indexes</li>
+                                        </ol>
 
-						</tbody>
-					</table>
+
 				</section>
 
 				<section>
 
 					<h2>Setting up concurrent requests</h2>
 
-					<p>Pre-generate insert query batches into .sql files</p>
-					<p>Run 10 concurrently in a screen session</p>
-					<p>Not 100% representative of real-world behavior</p>
+                                        <ul>
+                                            <li>Pre-generate insert query batches into .sql files</li>
+                                            <li>Run 10 concurrently in a screen session</li>
+                                            <li>Not 100% representative of real-world behavior</li>
+                                        </ul>
 
 				</section>
 
